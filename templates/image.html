@@ -1,0 +1,18 @@
+<form action="/img_upload" method="POST", enctype="multipart/form-data">
+  <div class="blog_details">
+    <h2>이름</h2>
+    <input name="userEmail" id="userEmail" style="text-align:center; width:300px; height:23px;" value="llmm030506@gamil.com" readonly><br/><br/>
+    <div class="box-file-input">
+      <label>
+        <input type="file" name="filename" class="file-input" accept="image/*" id="filename">
+      </label>
+      <span class="filename"></div><br/>
+    <h3>사진 옵션</h3>
+    <input type="radio" name="imgae_chk" value="화가" checked="checked"> 화가&nbsp;&nbsp;
+    <input type="radio" name="imgae_chk" value="디즈니"> 디즈니&nbsp;&nbsp;
+    <input type="radio" name="imgae_chk" value="고흐"> 고흐&nbsp;&nbsp;
+    <br/>
+    <br/>
+    <button type="submit" class="button rounded-0 primary-bg text-white w-100 btn_1 boxed-btn">AI 변환 시작</button>
+  </div>
+</form>
