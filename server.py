@@ -1,6 +1,18 @@
 from flask import Flask, render_template, request
 #from werkzeug import secure_filename
 from cyclegan import *
+import mysql.connector
+
+mydb = mysql.connector.connect(
+    host='10.53.68.126',
+    user='root',
+    port='3306',
+    password='password123@',
+    database='Net'
+)
+
+mycursor = mydb.cursor()
+
 
 app = Flask(__name__)
 
@@ -25,8 +37,16 @@ def upload_file():
     #select = 0
 
     # if select == "cyclegan":
-    print(cyclegan_predict(path))
     
+    cyclegan_binary = cyclegan_predict(path)
+    print(cyclegan_binary)
+    
+    sql = "INSERT INTO user_image (userEmail, imgage) VALUES (%s, %s)"
+    val = (nameData, cyclegan_binary)
+
+    mycursor.execute(sql, val)
+
+    mydb.commit()
 
     #radioData = request.form['image_chk']
     #print(radioData)
