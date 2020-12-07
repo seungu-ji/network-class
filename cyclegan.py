@@ -13,12 +13,7 @@ from abc import ABC, abstractmethod
 from torch.nn import init
 from matplotlib import pyplot as plt
 import time
-
-import sys
-import json
-import numpy as np
 import cv2
-
 
 #Cycle Gan 모델 선언
 class ResnetBlock(nn.Module):
@@ -154,64 +149,67 @@ def tensor2im(input_image, imtype=np.uint8):
     else:  # if it is a numpy array, do nothing
         image_numpy = input_image
     return image_numpy.astype(imtype)
+
+
+
+
+def cyclegan_predict(img_path):
 # 모델 선언
-norm_layer = functools.partial(nn.InstanceNorm2d, affine=False, track_running_stats=False)
-generator=ResnetGenerator(input_nc=3,output_nc=3,ngf=64, norm_layer=norm_layer, use_dropout=False, n_blocks=9, padding_type='reflect')
-#모델에 가중치 로드
-state=torch.load('./weight/style_vangogh.pth')
-if hasattr(state, '_metadata'):
-  del state._metadata
-# patch InstanceNorm checkpoints prior to 0.4
-for key in list(state.keys()):  # need to copy keys here because we mutate in loop
-    patch_instance_norm_state_dict(state, generator, key.split('.'))
-generator.load_state_dict(state)
-#gpu를  사용하기 위한 코드
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-generator.to(device)
-#이미지를 변환한 후 모델에 적용시킨 코드
-transform=get_transform()
-# **중요**
-# A_img = Image.open('./img/Hanbin_Senior.png').convert('RGB')
-
-# json으로 받기.
-inputs = sys.stdin.read()
-# 문자열로 받은 형태를 json형태로 반환해준다.(dict)
-dat = json.loads(inputs)
-
-# 그 중에서 array로 담겨져있던 binary코드를 가져온다.
-binary_arry = dat['binary']['data']
-
-# opencv는 바이너리코드를 인코딩하여
-# python에서 컨트롤 가능한 비트맵으로 만들어 줄 수 있다.
-# 각 np의 원소는 uint8이어야 한다. 1byte = 8bits
-binary_np = np.array(binary_arry, dtype=np.uint8)
+    norm_layer = functools.partial(nn.InstanceNorm2d, affine=False, track_running_stats=False)
+    generator=ResnetGenerator(input_nc=3,output_nc=3,ngf=64, norm_layer=norm_layer, use_dropout=False, n_blocks=9, padding_type='reflect')
+    #모델에 가중치 로드
+    state=torch.load('./weight/style_vangogh.pth')
+    if hasattr(state, '_metadata'):
+      del state._metadata
+    # patch InstanceNorm checkpoints prior to 0.4
+    for key in list(state.keys()):  # need to copy keys here because we mutate in loop
+        patch_instance_norm_state_dict(state, generator, key.split('.'))
+    generator.load_state_dict(state)
+    #gpu를  사용하기 위한 코드
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    generator.to(device)
+    #이미지를 변환한 후 모델에 적용시킨 코드
+    transform=get_transform()
 
 
-# A_img = Image.open(input_img).convert('RGB')
 
-# 인코딩
-encoded_img = np.fromstring(binary_np, dtype=np.uint8)
-A_img = cv2.imdecode(encoded_img, cv2.IMREAD_COLOR)
+    # 이미지 사이즈 확인
+    size_img = cv2.imread(img_path)
+    print(size_img.shape)
+    row, col = size_img.shape[:2]
+    print(row, col)
 
-A = transform(A_img)
-real = A.to(device)
-start_time = time.time()
-fake = generator(real.unsqueeze(0))
-end_time = time.time()
-print("WorkingTime: {} sec".format(end_time-start_time))
-#tensor를 이미지로 변환
-img=tensor2im(fake)
-#만약 사진이 좀 이상하다 하면은 아래코드주석치고 하번 더실행
-img=cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-# 시각화
-#plt.imshow(img, interpolation='nearest')
-#plt.show()
-# 디코딩
-# binary_cv = cv2.imencode('.PNG', img)[1].tobytes()
-_, imen = cv2.imencode('.jpeg', img)
-imenb = bytes(imen)
-imnb = list(imenb)
+    # **중요**
 
-# 보낼때 역시 json으로 보내준다.
-result = json.dumps({'img': imnb})
-print(result)
+
+
+
+    A_img = Image.open(img_path).convert('RGB')
+    print(A_img)
+
+
+    A = transform(A_img)
+    # print(A)
+
+    real = A.to(device)
+    start_time = time.time()
+    fake = generator(real.unsqueeze(0))
+    end_time = time.time()
+    print("WorkingTime: {} sec".format(end_time-start_time))
+    #tensor를 이미지로 변환
+    img=tensor2im(fake)
+    #만약 사진이 좀 이상하다 하면은 아래코드주석치고 하번 더실행
+    img=cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
+    # plt 시각화
+    # plt.imshow(img, interpolation='nearest')
+    # plt.show()
+
+
+    dst = cv2.resize(img, dsize=(col, row), interpolation=cv2.INTER_AREA)
+    print(dst.shape)
+    # cv2.imwrite('img2', dst)
+    
+    binary_cv = cv2.imencode('.PNG', dst)[1].tobytes()
+
+    return binary_cv

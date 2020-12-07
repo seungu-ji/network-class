@@ -165,14 +165,29 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 generator.to(device)
 #이미지를 변환한 후 모델에 적용시킨 코드
 transform=get_transform()
+
+
+
 # **중요**
-A_img = Image.open('./img/Hanbin_Senior.png').convert('RGB')
 
+#A_img = Image.open('./img/Hanbin_Senior.png').convert('RGB')
+#print(A_img)
 
+path = './img/Hanbin_Senior.png'
+img_cv = cv2.imread(path)
 
+binary_cv = cv2.imencode('.PNG', img_cv)[1].tobytes()
 
+encoded_img = np.fromstring(binary_cv, dtype = np.uint8)
+A_img = cv2.imdecode(encoded_img, cv2.IMREAD_COLOR) 
+
+print(A_img)
+
+A = A_img
 #A_img = Image.open(input_img).convert('RGB')
-A = transform(A_img)
+# A = transform(A_img)
+# print(A)
+
 real = A.to(device)
 start_time = time.time()
 fake = generator(real.unsqueeze(0))
