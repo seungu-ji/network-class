@@ -209,6 +209,8 @@ def cyclegan_predict(img_path):
     dst = cv2.resize(img, dsize=(col, row), interpolation=cv2.INTER_AREA)
     print(dst.shape)
     # cv2.imwrite('img2', dst)
+
+    cv2.imwrite("./img/output.png", dst)
     
     binary_cv = cv2.imencode('.PNG', dst)[1].tobytes()
 
