@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request
 #from werkzeug import secure_filename
 from cyclegan import *
+from cartoongan import *
+from timegan import *
 import mysql.connector
 import base64
 
@@ -33,18 +35,24 @@ def upload_file():
     # print('./img/' + f.filename)
     path = './img/' + f.filename
 
-    # print(path.type)
-    #select = 0
+    option = request.form.getlist('options')
+    # print(option)
 
-    # if select == "cyclegan":
+    if option[0] == '디즈니':
+        cartoongan_predict(path)
+    elif option[0] == '고흐':
+        cyclegan_predict(path)
+    else:
+        print()
+        print()
+        print(option[0])
+        timegan_predict(path, option[0])
     
-    # cyclegan_binary = cyclegan_predict(path)
-    # print(cyclegan_binary)
-    
-    cyclegan_predict(path)
 
     with open('./img/output.png', 'rb') as img:
         base64_string = base64.b64encode(img.read())
+
+    # print(base64_string[len(base64_string)-100:])
 
     sql = "INSERT INTO user_image (userEmail, image) VALUES (%s, %s)"
     val = (nameData, base64_string)
@@ -52,9 +60,6 @@ def upload_file():
     mycursor.execute(sql, val)
 
     mydb.commit()
-
-    #radioData = request.form['image_chk']
-    #print(radioData)
 
     return "hello world"
         

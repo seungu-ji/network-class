@@ -175,9 +175,9 @@ def cyclegan_predict(img_path):
 
     # 이미지 사이즈 확인
     size_img = cv2.imread(img_path)
-    print(size_img.shape)
+    # print(size_img.shape)
     row, col = size_img.shape[:2]
-    print(row, col)
+    # print(row, col)
 
     # **중요**
 
@@ -211,7 +211,3 @@ def cyclegan_predict(img_path):
     # cv2.imwrite('img2', dst)
 
     cv2.imwrite("./img/output.png", dst)
-    
-    binary_cv = cv2.imencode('.PNG', dst)[1].tobytes()
-
-    return binary_cv
